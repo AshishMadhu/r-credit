@@ -1,0 +1,2 @@
+create custome error pages (404 etc)
+

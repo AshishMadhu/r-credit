@@ -1,0 +1,204 @@
+{% extends 'base.html' %} {% load static %} {% load filters %}
+{% load crispy_forms_tags %} {% block title %} {{ block.super }} {% endblock title %} 
+{% block content %}
+
+<h1>Your Debits</h1>
+<div class="col-md-7">
+    <div class="opt-container">
+        <select
+            id="select"
+            class="btn btn-secondary m-1"
+            onchange="handleSortChange(this)"
+        >
+            <option value="none">Sort</option>
+            <option value="customer__name">Sort by name</option>
+            <option value="customer__total">Sort by total</option>
+            <option value="date">Sort by time</option>
+        </select>
+        <button
+            class="btn btn-secondary m-1"
+            style="font-weight: bold"
+            onclick="handleOnClick()"
+        >
+            ↕
+        </button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-7">
+        <a
+            href="{% url 'main:debitlog-create' debit_pk=debit_id %}"
+            class="btn btn-secondary btn-block"
+            >Add more debits +</a
+        >
+        {% for obj in object_list %}
+        <div class="list-group">
+            <a
+                href="{% url 'main:debitlog-list' customer_pk=obj.customer__pk %}"
+                class="list-group-item list-group-item-action flex-column align-items-start"
+            >
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{obj.customer__name}}</h5>
+                    <small>{{ obj.customer__total|check_negative }}</small>
+                </div>
+                {% load tz %} {% localtime on %}
+                <div class="date-container">
+                    <small class="mb-1 moment-date"
+                        >{{ obj.date|date:'YmdHi' }}</small
+                    >
+                    <p class="mb-1 date">
+                        <small>{{ obj.date|date:'N j D g:i A' }}</small>
+                    </p>
+                </div>
+                {% endlocaltime %}
+            </a>
+        </div>
+        {% if forloop.last %}
+        <div class="p-2">
+            {% include 'main/includes/paginator.html' with is_paginated=is_paginated page_obj=page_obj %}
+        </div>
+        {% endif %} {% empty %}
+        <h2>You don't have debit log</h2>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        <div
+            class="d-flex w-100 justify-content-between search"
+            style="margin-bottom: 70px"
+        >
+            <input
+                autocomplete="off"
+                placeholder="Customer Name"
+                type="text"
+                name="search"
+                id="search_id"
+                class="textinput textInput form-control"
+            />
+            <button class="btn btn-primary" onclick="searchBtnHandler()">Search</button>
+            <div id="search_items_container" class="search-items"></div>
+        </div>
+        <div class="quick-deblog-form">
+            <h4>Quick Log</h4>
+            <hr />
+            <form
+                action="{% url 'main:debitlog-create' debit_pk=debit_id %}"
+                method="post"
+            >
+                {{ debitlog_form|crispy }} {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %} {% block script %}
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+    axios.defaults.xsrfHeaderName = "X-CSRFToken";
+    axios.defaults.xsrfCookieName = "csrftoken";
+    axios.defaults.withCredentials = true;
+    var host = document.location.host;
+    var debit_id = "{{ debit_id  }}"
+    // for search suggestion navigation
+    var currentFocus = 0;
+
+    function searchBtnHandler() {
+        name = $('#search_id').val()
+        if (name)
+            addParamsAndRefresh('name', name)
+    }
+
+    // display time with moment js
+    $(".moment-date > small").each((i, obj) => {
+        var time = $(obj).text();
+        $(obj).text("Last updated: " + moment(time, "YYYYMMDDhhmm").fromNow());
+    });
+
+    // decrease row size to fit the form in display
+    $("#id_item_list").attr("rows", "5");
+    
+    // removes all search suggestions
+    function closeAllSuggestions() {
+        $('.search-suggestions').each((i, ele) => {
+            $(ele).remove();
+        });
+    }
+
+    function removeActive(suggestions) {
+        suggestions.each((i, ele) => {
+            $(ele).removeClass('suggestion-active');
+        });
+    }
+
+    function addActive(suggestions) {
+        removeActive(suggestions);
+        if (currentFocus > suggestions.length) currentFocus = 1;
+        if (currentFocus < 0) currentFocus = suggestions.length;
+        $(suggestions[currentFocus - 1]).addClass('suggestion-active');
+    }
+
+    // search suggestions navigation
+    $('#search_id').on("keydown", function(e) {
+        var suggestions = $('.search-suggestions');
+        if(e.keyCode == 40) {
+            currentFocus++
+            addActive(suggestions);
+        } else if(e.keyCode == 38) { 
+            currentFocus--;
+            addActive(suggestions);
+        } else if(e.keyCode == 13) {
+            $(suggestions[currentFocus - 1]).click();
+            searchBtnHandler();
+        }
+    });
+
+    $("#search_id").on("propertychange input", function (e) {
+        var inp = this;
+        var valueChanged = false;
+
+        if (e.type == "propertychange") {
+            valueChanged = e.originalEvent.propertyName == "value";
+        } else {
+            valueChanged = true;
+        }
+        if (valueChanged) {
+            axios
+                .get(`http://${host}/api/search-customer/${debit_id}/?name=${this.value}`)
+                .then((res) => {
+                    var search_list = res.data;
+                    var search_items_div = $('#search_items_container')
+                    var div_element = null;
+                    closeAllSuggestions();
+                    search_list.forEach((data) => {
+                        if(data.name.substr(0, this.value.length).toUpperCase() == this.value.toUpperCase()) {
+                            div_element = $("<div></div>")
+                                            .html(`<strong>${data.name.substr(0, this.value.length)}</strong>${data.name.substr(this.value.length)} <input type="hidden" value="${data.name}">`)
+                                            .addClass('search-suggestions')
+                            div_element.click(function(e) {
+                                inp.value = $(this).children('input').val();
+                            });
+                        search_items_div.append(div_element);
+                        }
+                    });
+                })
+                .catch((err) => {
+                    if (err.response) {
+                        closeAllSuggestions();
+                        if(err.response.data)
+                            console.log(err.response.data);
+                        else
+                            console.log(err.response);
+                    } else if (err.request) {
+                        console.log(err.request);
+                    }
+                    console.log(err);
+                });
+        }
+    });
+
+    // removes all suggestions when user clicks on document
+    $(document).click((e) => {
+        closeAllSuggestions();
+    })
+</script>
+
+{% endblock script %}

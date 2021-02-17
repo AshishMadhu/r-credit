@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button type="submit" class="btn btn-success">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+{% block script %}
+<script>
+    key_values_now = document.location.search.substr(1).split("&");
+    var i;
+    for (i = 0; i < key_values_now.length; i++) {
+        if (key_values_now[i].startsWith("customer_name" + "=")) {
+            $('#id_amount').focus();
+            break;
+        }
+    }
+    if(i >= key_values_now.length) {
+        $('#id_customer_name').focus();
+    }
+        
+</script>
+{% endblock script %}

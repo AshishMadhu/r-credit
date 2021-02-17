@@ -1,0 +1,130 @@
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags %} 
+{% block title %} PaidLog list {% endblock title %} {% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div
+            class="customer-details d-flex w-100 justify-content-between hover-cls"
+        >
+            <div class="d-flex justify-content-between">
+                <img
+                    src="{% static 'svgs/user.svg' %}"
+                    alt="user pic"
+                    width="40px"
+                />
+                <h2>{{ customer.name }}</h2>
+            </div>
+            <h2 style="color: rgb(87, 87, 87)">
+                Total paid :{{ customer.total_paid }}
+            </h2>
+        </div>
+        <div class="d-flex w-100 justify-content-between">
+            <div>
+                <a href="{% url 'main:debitlog-list' customer_pk=customer.pk %}" class="btn btn-secondary">Show Debit log</a>
+            </div>
+            <div>
+                <select
+                    id="select"
+                    class="btn btn-secondary m-1"
+                    onchange="handleSortChange(this)"
+                >
+                    <option value="none">Sort</option>
+                    <option value="amount">Sort by amount</option>
+                    <option value="datentime">Sort by time</option>
+                </select>
+                <button
+                    class="btn btn-secondary m-1"
+                    style="font-weight: bold"
+                    onclick="handleOnClick()"
+                >
+                    ↕
+                </button>
+            </div>
+        </div>
+        <div class="list-group">
+            <a
+                href="{% url 'main:paidlog-create' debit_pk=debit_id %}?customer_name={{customer.name}}"
+                class="btn btn-secondary btn-block"
+                >Add more pay logs +</a
+            >
+            {% for obj in object_list %}
+            <a
+                href="#"
+                class="list-group-item list-group-item-action flex-column align-items-start hover-cls"
+                style="cursor: default"
+            >
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">₹ {{ obj.amount }}</h5>
+
+                    {% load tz %} {% localtime on %}
+                    <div class="date-container">
+                        <small class="moment-date"
+                            >{{ obj.datentime|date:'YmdHi' }}</small
+                        >
+                        <small class="date"
+                            >{{ obj.datentime|date:'N j D g:i A' }}</small
+                        >
+                    </div>
+                    {% endlocaltime %}
+                </div>
+                <div class="button-container">
+                    <button
+                        class="btn btn-block"
+                        style="margin-top: 3px"
+                        onclick="deleteHandler('{{ obj.id }}')"
+                    >
+                        <img
+                            src="{% static 'svgs/delete.svg' %}"
+                            alt="delete"
+                            width="30px"
+                        />
+                    </button>
+                </div>
+            </a>
+            {% if forloop.last %}
+            <div class="p-2">
+                {% include 'main/includes/paginator.html' with is_paginated=is_paginated page_obj=page_obj %}
+            </div>
+            {% endif %}
+            {% empty %}
+            <h2>You don't have Pay log</h2>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div style="margin-top: 80px;">
+            <h4>Quick Paid Form</h4>
+            <hr />
+            <form
+                action="{% url 'main:paidlog-create' debit_pk=debit_id %}"
+                method="post"
+            >
+                {{ paidlog_form|crispy }} {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %} {% block script %}
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+    axios.defaults.xsrfHeaderName = "X-CSRFToken";
+    axios.defaults.xsrfCookieName = "csrftoken";
+    axios.defaults.withCredentials = true;
+    var customer_id = "{{ customer.id }}";
+    // set the value of customer_name
+    $("#id_customer_name").val("{{ customer.name }}");
+
+    function deleteHandler(id) {
+        host = document.location.host;
+        url = "http://" + host + "/" + "api/" + "paidlog/" + customer_id + "/" + id + "/";
+        axios
+            .delete(url)
+            .then((res) => document.location.reload(true))
+            .catch((err) => {
+                if(err.response) {
+                    console.log(err.response);
+                }
+        });
+    }
+</script>
+{% endblock script %}

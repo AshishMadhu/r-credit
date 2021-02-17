@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% load crispy_forms_tags %}
+{% block title %} {{ request.user.username }} - debits
+{% endblock title %} {% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div class="list-group mt-4">
+            {% for obj in object_list %}
+            <div class="d-flex w-100 justify-content-between">
+                <a
+                    href="{% url 'main:customer-log' debit_pk=obj.pk %}"
+                    class="list-group-item list-group-item-action flex-column align-items-start hover-cls"
+                >
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ obj.name }}</h5>
+                    </div>
+                </a>
+                <button
+                    class="btn ml-1"
+                    style="margin-top: 3px"
+                    onclick="deleteHandler('{{ obj.id }}')"
+                >
+                    <img
+                        src="{% static 'svgs/delete.svg' %}"
+                        alt="delete"
+                        width="30px"
+                    />
+                </button>
+            </div>
+            {% if forloop.last %}
+            <div class="p-2">
+                {% include 'main/includes/paginator.html' with is_paginated=is_paginated page_obj=page_obj %}
+            </div>
+            {% endif %}
+            {% empty %}
+            <h3>You don't have any debits to show!</h3>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <h3 class="mt-2">Create Debits</h3>
+        <hr>
+        <form action="{% url 'main:create-debit' %}" method="post">
+            {% csrf_token %}
+            {{ debit_form|crispy }}
+            <button type="submit" class="btn btn-block btn-secondary">Create debit</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+{% block script %}
+<script>
+    function deleteHandler(id) {
+        alert('clicked')
+    }
+</script>
+{% endblock script %}
