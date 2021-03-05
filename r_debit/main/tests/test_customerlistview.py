@@ -3,6 +3,7 @@ from django import test
 from django.http import response
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
 from rest_framework import status
 
 from main import factories
@@ -56,5 +57,30 @@ class TestCustomerListView(test.TestCase):
             customer = factories.CustomerFactory(debit = debit)
             factories.DebitLogFactory(customer = customer)
         url = reverse('main:customer-log', kwargs = {'debit_pk': debit.id}) + '?sort=customer_number'
+        with self.assertLogs('main.views', level = "ERROR") as L:
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_name_search(self):
+        debit = factories.DebitFactory(user = self.user)
+        for i in range(5):
+            customer = factories.CustomerFactory(debit = debit)
+            factories.DebitLogFactory(customer = customer)
+        customer = factories.CustomerFactory(name = 'kannan', debit = debit)
+        factories.DebitLogFactory(customer = customer)
+        url = reverse('main:customer-log', kwargs = {'debit_pk': debit.id}) + '?name=kannan'
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.context['object_list'][0]['customer__name'], 'kannan')
+
+    def test_name_search_with_non_existing_name(self):
+        debit = factories.DebitFactory(user = self.user)
+        for i in range(5):
+            customer = factories.CustomerFactory(debit = debit)
+            factories.DebitLogFactory(customer = customer)
+        url = reverse('main:customer-log', kwargs = {'debit_pk': debit.id}) + '?name=oz'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        messages = [m.message for m in get_messages(response.wsgi_request)]
+        self.assertIn('Customer name not found!', messages)
+

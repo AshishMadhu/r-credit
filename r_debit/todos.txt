@@ -1,2 +1,5 @@
-create custome error pages (404 etc)
+Paid list view:
+Should show paid date and time
 
+Implement a accounts so that each user liked to a particular debit can see his/her credits real
+time in his account

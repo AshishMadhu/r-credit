@@ -1,130 +1,157 @@
-{% extends 'base.html' %} {% load static %} {% load filters %} {% block content %}
-<div class="col-md-7">
-    <div
-        class="customer-details d-flex w-100 justify-content-between hover-cls"
-    >
-        <div class="d-flex justify-content-between">
-            <img
-                src="{% static 'svgs/user.svg' %}"
-                alt="user pic"
-                width="40px"
-            />
-            <h2 style="line-height: 88px;">{{ customer.name }}</h2>
-        </div>
-        <div class="column">
-            {% if customer.total_paid %}
-            <div class="p-1" id="total-paid" style="color: rgb(87, 87, 87)">Total Paid :{{ customer.total_paid }}</div>
-            <div class="p-1" id="total" style="color: rgb(87, 87, 87)">{{ customer.total|check_negative }}</div>
-            {% else %}
-            <div class="p-1" id="total" style="color: rgb(87, 87, 87)">{{ customer.total|check_negative }}</div>
-            {% endif %}
-        </div>
-    </div>
-    <div class="opt-container d-flex w-100 justify-content-between">
-        <div>
-            <button id="showPaidListBtn" class="btn btn-secondary" onclick="showPaidListHandler()">Show paid Debits</button>
-            <a
-                style="color: white"
-                class="btn btn-secondary"
-                href="{% url 'main:paidlog-list' customer_pk=customer.pk %}"
-                >Show paid log</a
-            >
-        </div>
-        <div>
-            <select
-                id="select"
-                class="btn btn-secondary m-1"
-                onchange="handleSortChange(this)"
-            >
-                <option value="none">Sort</option>
-                <option value="amount">Sort by amount</option>
-                <option value="date">Sort by time</option>
-            </select>
-            <button
-                class="btn btn-secondary m-1"
-                style="font-weight: bold"
-                onclick="handleOnClick()"
-            >
-                ↕
-            </button>
-        </div>
-    </div>
-    <div class="list-group">
-        <a
-            href="{% url 'main:debitlog-create' debit_pk=debit_id %}?customer_name={{customer.name}}"
-            class="btn btn-secondary btn-block"
-            >Add more debits +</a
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% load static %} 
+{% load filters %} {% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div
+            class="customer-details d-flex w-100 justify-content-between hover-cls"
         >
-        {% for obj in object_list %}
-        <a
-            href="#"
-            class="list-group-item list-group-item-action flex-column align-items-start hover-cls"
-            style="cursor: default"
-        >
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">₹ {{ obj.amount }}</h5>
-
-                {% load tz %} {% localtime on %}
-                <div class="date-container">
-                    <small class="moment-date"
-                        >{{ obj.date|date:'YmdHi' }}</small
-                    >
-                    <small class="date"
-                        >{{ obj.date|date:'N j D g:i A' }}</small
-                    >
-                </div>
-                {% endlocaltime %}
+            <div class="d-flex justify-content-between">
+                <img
+                    src="{% static 'svgs/user.svg' %}"
+                    alt="user pic"
+                    width="40px"
+                />
+                <h2 style="line-height: 88px">{{ customer.name }}</h2>
             </div>
-            <div class="d-flex w-100 justify-content-between">
-                <ul style="margin-bottom: 0px">
-                    {% for item in obj.get_item_list %} {% if item %}
-                    <li>{{item}}</li>
-                    {% endif %} {% endfor %}
-                </ul>
-                <div class="paid-container">
-                    {% if not obj.paid %}
-                    <button
-                        id="{{ obj.id }}-paid-toggler-ele"
-                        class="badge badge-danger"
-                        onclick='paidToggler("{{ obj.id }}", true)'
-                    >
-                        Unpaid
-                    </button>
-                    <p id="{{ obj.id }}-help-text">Click to mark as paid</p>
-                    {% else %}
-                    <button
-                        id="{{ obj.id }}-paid-toggler-ele"
-                        class="badge badge-success"
-                        onclick='paidToggler("{{ obj.id }}", false)'
-                    >
-                        paid
-                    </button>
-                    <p style="left: -327%">Click to mark as unpaid</p>
-                    {% endif %}
+            <div class="column">
+                {% if customer.total_paid %}
+                <div class="p-1" id="total-paid" style="color: rgb(87, 87, 87)">
+                    Total Paid :{{ customer.total_paid }}
                 </div>
+                <div class="p-1" id="total" style="color: rgb(87, 87, 87)">
+                    {{ customer.total|check_negative }}
+                </div>
+                {% else %}
+                <div class="p-1" id="total" style="color: rgb(87, 87, 87)">
+                    {{ customer.total|check_negative }}
+                </div>
+                {% endif %}
             </div>
-            <div class="button-container">
+        </div>
+        <div class="opt-container d-flex w-100 justify-content-between">
+            <div>
                 <button
-                    class="btn btn-block"
-                    style="margin-top: 3px"
-                    onclick="deleteHandler('{{ obj.id }}')"
+                    id="showPaidListBtn"
+                    class="btn btn-secondary"
+                    onclick="showPaidListHandler()"
                 >
-                    <img
-                        src="{% static 'svgs/delete.svg' %}"
-                        alt="delete"
-                        width="30px"
-                    />
+                    Show paid Debits
+                </button>
+                <a
+                    style="color: white"
+                    class="btn btn-secondary"
+                    href="{% url 'main:paidlog-list' customer_pk=customer.pk %}"
+                    >Show paid log</a
+                >
+            </div>
+            <div>
+                <select
+                    id="select"
+                    class="btn btn-secondary m-1"
+                    onchange="handleSortChange(this)"
+                >
+                    <option value="none">Sort</option>
+                    <option value="amount">Sort by amount</option>
+                    <option value="date">Sort by time</option>
+                </select>
+                <button
+                    class="btn btn-secondary m-1"
+                    style="font-weight: bold"
+                    onclick="handleOnClick()"
+                >
+                    ↕
                 </button>
             </div>
-        </a>
-        {% if forloop.last %}
-        <div class="p-2">
-            {% include 'main/includes/paginator.html' with is_paginated=is_paginated page_obj=page_obj %}
         </div>
-        {% endif %}
-        {% empty %}
-        <h2>You don't have any log</h2>
-        {% endfor %}
+        <div class="list-group">
+            <a
+                href="{% url 'main:debitlog-create' debit_pk=debit_id %}?customer_name={{customer.name}}"
+                class="btn btn-secondary btn-block"
+                >Add more debits +</a
+            >
+            {% for obj in object_list %}
+            <a
+                href="#"
+                class="list-group-item list-group-item-action flex-column align-items-start hover-cls"
+                style="cursor: default"
+            >
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">₹ {{ obj.amount }}</h5>
+
+                    {% load tz %} {% localtime on %}
+                    <div class="date-container">
+                        <small class="moment-date"
+                            >{{ obj.date|date:'YmdHi' }}</small
+                        >
+                        <small class="date"
+                            >{{ obj.date|date:'N j D g:i A' }}</small
+                        >
+                    </div>
+                    {% endlocaltime %}
+                </div>
+                <div class="d-flex w-100 justify-content-between">
+                    <ul style="margin-bottom: 0px">
+                        {% for item in obj.get_item_list %} {% if item %}
+                        <li>{{item}}</li>
+                        {% endif %} {% endfor %}
+                    </ul>
+                    <div class="paid-container">
+                        {% if not obj.paid %}
+                        <button
+                            id="{{ obj.id }}-paid-toggler-ele"
+                            class="badge badge-danger"
+                            onclick='paidToggler("{{ obj.id }}", true)'
+                        >
+                            Unpaid
+                        </button>
+                        <p id="{{ obj.id }}-help-text">Click to mark as paid</p>
+                        {% else %}
+                        <button
+                            id="{{ obj.id }}-paid-toggler-ele"
+                            class="badge badge-success"
+                            onclick='paidToggler("{{ obj.id }}", false)'
+                        >
+                            paid
+                        </button>
+                        <p style="left: -327%">Click to mark as unpaid</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="button-container">
+                    <button
+                        class="btn btn-block"
+                        style="margin-top: 3px"
+                        onclick="deleteHandler('{{ obj.id }}')"
+                    >
+                        <img
+                            src="{% static 'svgs/delete.svg' %}"
+                            alt="delete"
+                            width="30px"
+                        />
+                    </button>
+                </div>
+            </a>
+            {% if forloop.last %}
+            <div class="p-2">
+                {% include 'main/includes/paginator.html' with is_paginated=is_paginated page_obj=page_obj %}
+            </div>
+            {% endif %} {% empty %}
+            <h2>You don't have any log</h2>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="quick-deblog-form">
+            <h4>Quick Add</h4>
+            <hr />
+            <form
+                action="{% url 'main:debitlog-create' debit_pk=debit_id %}"
+                method="post"
+            >
+                {{ debitlog_form|crispy }} {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">Create</button>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock content %} {% block script %}
@@ -171,7 +198,7 @@
     }
 
     function deleteHandler(debitlog_pk) {
-        
+
         host = document.location.host;
         url = "http://" + host + "/" + "debitlog-delete" + "/" + debitlog_pk;
         del = confirm("Do you want to delet the log?");
@@ -228,7 +255,7 @@
                             $('#total').html("Total: " + total)
                         }
                     }
-                    
+
                     completed = true;
                 })
                 .catch((err) => {

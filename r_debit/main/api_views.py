@@ -22,6 +22,10 @@ class PaidLogViewSet(viewsets.ModelViewSet):
     Created a full Viewset 'cause it is useful in near future
     or you can simply use the UpdateApiView.
     """
+    # * better approach
+    # inseted of custmer id as url param use debit id
+    # get the customer name as data and search for name in debit customer_set if not create new 
+    # else create new debit
     model = models.PaidLog
     serializer_class = serializers.PaidLogSerializer
     authentication_classes = [SessionAuthentication, ]

@@ -103,3 +103,7 @@
 .paid-container:hover > p {
     visibility: visible;
 }
+
+.R:hover::after {
+    content: "ayan";
+}

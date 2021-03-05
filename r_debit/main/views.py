@@ -4,15 +4,14 @@ from typing import Any, Dict
 from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models.aggregates import Max, Sum
+from django.db.models.aggregates import Max
 from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
-from django.http import request
 from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, ListView
 from django.views.generic.edit import DeleteView
 
 from . import forms, mixins, models, permissions
@@ -43,6 +42,17 @@ class DebitListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self) -> QuerySet:
         return self.model.objects.filter(user = self.request.user).order_by('name')
+
+class DebitDeleteView(LoginRequiredMixin, mixins.PermissionCheckMixin, DeleteView):
+    permission_classes = [permissions.CheckDebitObjAccess, ]
+    model = models.Debit
+    pk_url_kwarg = 'debit_pk'
+
+    def delete(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+        self.object.delete()
+        # just need a response 'success' to refresh the page
+        return HttpResponse('success')
 
 class DebitLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateView):
     model = models.DebitLog
@@ -87,10 +97,40 @@ class DebitLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, Create
         instance = form.save()
         return HttpResponseRedirect(instance.get_absolute_url())
 
+class DebitLogListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView):
+    paginate_by = 6
+    permission_classes = [permissions.CheckCustomerAccess, ]
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        # to show customer name
+        ctx = super().get_context_data(**kwargs)
+        customer = models.Customer.objects.get(pk = self.kwargs.get('customer_pk'))
+        ctx.update({
+            'customer': customer,
+            'debit_id': customer.debit.id,
+            'debitlog_form': forms.DebitLogForm,
+        })
+        return ctx
+
+    def get_queryset(self) -> QuerySet:
+        sort_arg = self.request.GET.get('sort') or '-date'
+        paid_arg = self.request.GET.get('paid', False)
+        customer = models.Customer.objects.get(pk = self.kwargs.get('customer_pk'))
+        return customer.debitlog_set.all().filter(paid = paid_arg).order_by(sort_arg)
+
+class DebitLogDeleteView(LoginRequiredMixin, mixins.PermissionCheckMixin, DeleteView):
+    # todo Bettter create an api view *It was a long day for me*
+    permission_classes = [permissions.DeleteDebitLogPermission, ]
+    model = models.DebitLog
+    pk_url_kwarg = 'debitlog_pk'
+
+    def delete(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+        self.object.delete()
+        # just need a response 'success' to refresh the page
+        return HttpResponse('success')
+
 class CustomerListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView):
-    #? test
-    # pass non field sort value
-    # pass a name check if it returns a qs containing name or return qs by date
     paginate_by = 6
     allow_empty = True
     permission_classes = [permissions.CheckDebitAccess, ]
@@ -120,7 +160,8 @@ class CustomerListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView
 
         sort_args_list = ['customer__name', '-customer__name', 'customer__total', '-customer__total', 'date', '-date']
         if not sort_arg in sort_args_list:
-            logger.info('Invalid sort')
+            messages.add_message(self.request, messages.ERROR, 'Invalid sort parameter!')
+            logger.error('Invalid sort')
             sort_arg = '-date'
         debit = models.Debit.objects.get(pk=self.kwargs.get('debit_pk'))
         customers = debit.customer_set.all()
@@ -146,43 +187,7 @@ class CustomerListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView
                 messages.add_message(self.request, messages.ERROR, 'Customer name not found!')
         return queryset.order_by(sort_arg)
 
-class DebitLogListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView):
-    paginate_by = 6
-    permission_classes = [permissions.CheckCustomerAccess, ]
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        # to show customer name
-        ctx = super().get_context_data(**kwargs)
-        customer = models.Customer.objects.get(pk = self.kwargs.get('customer_pk'))
-        ctx.update({
-            'customer': customer,
-            'debit_id': customer.debit.id,
-        })
-        return ctx
-
-    def get_queryset(self) -> QuerySet:
-        sort_arg = self.request.GET.get('sort') or '-date'
-        paid_arg = self.request.GET.get('paid', False)
-        customer = models.Customer.objects.get(pk = self.kwargs.get('customer_pk'))
-        return customer.debitlog_set.all().filter(paid = paid_arg).order_by(sort_arg)
-
-class DebitLogDeleteView(LoginRequiredMixin, mixins.PermissionCheckMixin, DeleteView):
-    # todo Bettter create an api view *It was a long day for me*
-    permission_classes = [permissions.DeleteDebitLogPermission, ]
-    model = models.DebitLog
-    pk_url_kwarg = 'debitlog_pk'
-
-    def delete(self, request: HttpRequest, *args: str, **kwargs: Any) -> HttpResponse:
-        self.object = self.get_object()
-        self.object.delete()
-        # just need a response 'success' to refresh the page
-        return HttpResponse('success')
-
-
-class PaidLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateView):
-    #? test 
-    # with non-existing customer_name
-    
+class PaidLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateView):    
     template_name = 'main/paidlog_form.html'
     form_class = forms.PaidLogForm
     permission_classes = [permissions.CheckDebitAccess, ]
@@ -227,11 +232,6 @@ class PaidLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateV
 class PaidLogListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView):
     paginate_by = 10
     permission_classes = [permissions.CheckCustomerAccess, ]
-
-    # ?test
-    # with incorrect cs id
-    # test customer total_paid after save
-    
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         ctx = super().get_context_data(**kwargs)

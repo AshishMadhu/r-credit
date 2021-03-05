@@ -2,13 +2,19 @@ from . import models
 class BasePermission:
     def has_permission(self, request, view): 
         return True
-    def has_object_permission(self):
+    def has_object_permission(self, request, obj):
         pass
 
 class CheckDebitAccess(BasePermission):
     def has_permission(self, request, view):
         debit = models.Debit.objects.get(pk = view.kwargs.get('debit_pk'))
         if debit.user == request.user:
+            return True
+        return False
+
+class CheckDebitObjAccess(BasePermission):
+    def has_object_permission(self, request, obj):
+        if obj.user == request.user:
             return True
         return False
 

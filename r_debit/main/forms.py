@@ -7,6 +7,9 @@ class DebitForm(forms.ModelForm):
     class Meta:
         model = Debit
         fields = ['name', ]
+        help_texts = {
+            'name': 'RECOMMENTED: If you have a shop then give shop name as debit name'
+        }
 
 class DebitLogForm(forms.ModelForm):
     customer_name = forms.CharField(label="Customer Name")

@@ -7,7 +7,7 @@
     <div class="col-md-7">
         <div class="list-group mt-4">
             {% for obj in object_list %}
-            <div class="d-flex w-100 justify-content-between">
+            <div class="d-flex w-100 justify-content-between" id="{{ obj.id }}">
                 <a
                     href="{% url 'main:customer-log' debit_pk=obj.pk %}"
                     class="list-group-item list-group-item-action flex-column align-items-start hover-cls"
@@ -45,14 +45,27 @@
             {% csrf_token %}
             {{ debit_form|crispy }}
             <button type="submit" class="btn btn-block btn-secondary">Create debit</button>
-        </form>
+        </form> 
     </div>
 </div>
 {% endblock content %}
 {% block script %}
 <script>
+    axios.defaults.xsrfHeaderName = "X-CSRFToken";
+    axios.defaults.xsrfCookieName = "csrftoken";
+    axios.defaults.withCredentials = true;
+    host = document.location.host;
+    url = "http://" + host + "/" + "debit-delete/";
+
     function deleteHandler(id) {
-        alert('clicked')
+        url += id + "/";
+        con_delete = confirm("Do you want to delete?");
+        if(con_delete)
+            axios.post(url).then((res) => {
+                if(res.data == 'success') {
+                    $(`#${id}`).remove();
+                }
+            })
     }
 </script>
 {% endblock script %}

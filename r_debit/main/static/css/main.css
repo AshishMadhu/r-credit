@@ -102,4 +102,8 @@
 .paid-container:hover > p {
   visibility: visible;
 }
+
+.R:hover::after {
+  content: "ayan";
+}
 /*# sourceMappingURL=main.css.map */
