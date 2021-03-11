@@ -23,7 +23,7 @@ This is my semester's mini-project work. Like the Kadha-book app this is a websi
 - djangorestframework
 
 ## How to use
-I think it worth mentioning how to using the website, if you have time and like learning things yourself this is not for you sir.
+I think it worth mentioning how to use the website, if you have time and like learning things yourself this is not for you sir.
 
 [Guide](r_debit/How_to_use.md)
 
