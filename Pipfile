@@ -10,6 +10,7 @@ tzlocal = "*"
 factory-boy = "*"
 django-rest-framework = "*"
 django-rest-knox = "*"
+pandas = "*"
 
 [dev-packages]
 ipython = "*"
