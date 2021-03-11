@@ -201,6 +201,8 @@ class PaidLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateV
         super().get_initial()
 
     def get_customer(self, form: BaseModelForm):
+        # first check with name normally if not exist then check its titled version
+        # eg, shibu -not found then, titled version Shibu 
         try:
             return models.Customer.objects.get(
                 name=form['customer_name'].value(),

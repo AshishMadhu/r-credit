@@ -20,7 +20,7 @@ class TestPaidLogCreateView(TestCase):
             'customer_name': customer.name
         }
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse('main:customer-log', kwargs = {'debit_pk': debit.pk}))
+        self.assertRedirects(response, reverse('main:paidlog-list', kwargs = {'customer_pk': customer.pk}))
         self.assertEqual(len(models.PaidLog.objects.all()), 1)
 
         # test message
