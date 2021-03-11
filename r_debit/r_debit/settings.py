@@ -149,23 +149,3 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 # SECURE_SSL_REDIRECT = False
 # SECURE_HSTS_PRELOAD = True
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-
-
-import pandas as pd
-import glob
-
-files = [f for f in glob.glob("*.txt")]
-
-for f in files:
-    name = f.split('.txt')[0]
-    try:
-        dataframe = pd.read_csv(f, sep='delimiter', header=None, engine = 'python')
-        dataframe.to_csv(f'{name}.csv', index = None)
-        with open(f'{name}.csv', 'r+') as file:
-            contents = file.read().split('0')[1]
-            file.seek(0)
-            file.write(f'FileName {f}\n' + contents)
-            file.close()
-    except Exception as ex:
-        print(ex)
-        print("Exception in file: " + f) 
