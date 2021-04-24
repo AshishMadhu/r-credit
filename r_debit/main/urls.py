@@ -6,8 +6,8 @@ from .views import (CreateDebit, CustomerListView, DebitDeleteView, DebitListVie
 app_name = 'main'
 
 urlpatterns = [
+    path('/', DebitListView.as_view(), name = 'debit-list'),
     path('api/', include(('main.api_urls', 'main-api'), namespace = 'api')),
-    path('debits/', DebitListView.as_view(), name = 'debit-list'),
     path('debit-delete/<debit_pk>/', DebitDeleteView.as_view(), name = 'debit-delete'),
     path('debit-create/', CreateDebit.as_view(), name = 'create-debit'),
     path('debitlog-create/<uuid:debit_pk>/', DebitLogCreateView.as_view(), name = 'debitlog-create'),

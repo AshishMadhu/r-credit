@@ -30,7 +30,6 @@ class TestDebitlogCreateView(TestCase):
         with self.assertLogs('main.views', level = 'INFO') as cm: # just check log is called
             response = self.client.post(url, data)
         self.assertEqual(response.status_code, 302)
-        print(models.DebitLog.objects.all())
         self.assertEqual(len(models.DebitLog.objects.all()), 2)
         self.assertEqual(len(models.Customer.objects.all()), 1)
         self.assertEqual(models.Customer.objects.first().name, 'Kannan')

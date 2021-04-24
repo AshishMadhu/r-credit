@@ -31,12 +31,14 @@ class TestPaidLogCreateView(TestCase):
     def test_with_non_existing_customer(self):
         debit = factories.DebitFactory(user = self.user)
         url = reverse('main:paidlog-create', kwargs = {'debit_pk': debit.pk})
+        reverse_url = reverse('main:customer-log', kwargs = {'debit_pk': debit.pk})
         data = {
             'amount': 120,
             'customer_name': 'shibu tp'
         }
         response = self.client.post(url, data)
-        self.assertRedirects(response, reverse('main:customer-log', kwargs = {'debit_pk': debit.pk}))
+
+        self.assertRedirects(response, reverse_url)
         self.assertEqual(len(models.PaidLog.objects.all()), 0)
 
         # error message

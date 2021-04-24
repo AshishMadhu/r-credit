@@ -1,6 +1,7 @@
 from django.http import response
 from django.test import TestCase
 from django.urls import reverse
+from factory.errors import FactoryError
 
 from main import factories
 
@@ -29,4 +30,10 @@ class TestCustomerTestView(TestCase):
         debit = factories.DebitFactory()
         url = reverse('main:api:search-customer', kwargs = {'debit_pk': debit.pk}) + '?name=a'
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
+
+    def test_with_non_existing_name(self):
+        debit = factories.DebitFactory(user = self.user)
+        url = reverse('main:api:search-customer', kwargs = {'debit_pk': debit.pk}) 
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)

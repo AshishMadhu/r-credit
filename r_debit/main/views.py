@@ -227,9 +227,8 @@ class PaidLogCreateView(LoginRequiredMixin, mixins.PermissionCheckMixin, CreateV
             messages.add_message(self.request, messages.SUCCESS, '{} paid {}. Added successfully'.format(customer.name, form['amount'].value()))
         else:
             messages.add_message(self.request, messages.ERROR, 'Customer name not found!')
-            return HttpResponseRedirect(reverse('main:customer-log', kwargs = {'debti_pk': debit.pk}))
+            return HttpResponseRedirect(reverse('main:customer-log', kwargs = {'debit_pk': debit.pk}))
         return HttpResponseRedirect(reverse('main:paidlog-list', kwargs = {'customer_pk': customer.pk}))
-    
 
 class PaidLogListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView):
     paginate_by = 10
@@ -249,5 +248,3 @@ class PaidLogListView(LoginRequiredMixin, mixins.PermissionCheckMixin, ListView)
         sort_arg = self.request.GET.get('sort') or '-datentime'
         customer = models.Customer.objects.get(pk = self.kwargs.get('customer_pk'))
         return models.PaidLog.objects.filter(customer = customer).order_by(sort_arg)
-    
-
