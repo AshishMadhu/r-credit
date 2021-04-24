@@ -56,7 +56,6 @@ class PaidLogViewSet(viewsets.ModelViewSet):
             raise Http404
         return super().update(request, *args, **kwargs)
 
-
 class SearchCustomerAPIView(generics.GenericAPIView):
     model = models.Customer
     serializer_class = serializers.CustomerSerializer

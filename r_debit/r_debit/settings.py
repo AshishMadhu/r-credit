@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'rest_framework',
-    'knox',
+    # 'knox',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +118,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 LANGUAGE_CODE = 'en-us'
 
@@ -133,9 +139,9 @@ USE_TZ = True
 # csrf or axios
 CSRF_COOKIE_NAME = "csrftoken"
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+# }
 
 # auth views
 LOGIN_URL = 'accounts:login'
