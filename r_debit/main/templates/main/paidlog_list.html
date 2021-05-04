@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags %} 
+{% extends 'base.html' %} {% load static %} {% load crispy_forms_tags %}
 {% block title %} PaidLog list {% endblock title %} {% block content %}
 <div class="row">
     <div class="col-md-7">
@@ -116,7 +116,7 @@
 
     function deleteHandler(id) {
         host = document.location.host;
-        url = "http://" + host + "/" + "api/" + "paidlog/" + customer_id + "/" + id + "/";
+        url = "https://" + host + "/" + "api/" + "paidlog/" + customer_id + "/" + id + "/";
         axios
             .delete(url)
             .then((res) => document.location.reload(true))
