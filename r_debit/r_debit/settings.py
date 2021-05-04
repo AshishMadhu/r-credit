@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'v*qes$_ag$1u8ye6rvg(!(emqjw%dfrct%^b=m)6ghm*s3yoa$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '*',
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'rest_framework',
+    'dbbackup'
     # 'knox',
 ]
 
@@ -76,6 +77,19 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+if not DEBUG:
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'rcredit$default',
+        'USER': 'rcredit',
+        'PASSWORD': '<your_mysql_password>',
+        'HOST': 'rcredit.mysql.pythonanywhere-services.com',
+        'TEST': {
+          'NAME': 'rcredit$rcredit',
+        }
     }
 }
 
@@ -155,3 +169,7 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 # SECURE_SSL_REDIRECT = False
 # SECURE_HSTS_PRELOAD = True
 # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+# backup
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': os.path.join(BASE_DIR, 'backup')}
