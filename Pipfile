@@ -11,6 +11,7 @@ factory-boy = "*"
 django-rest-framework = "*"
 django-rest-knox = "*"
 pandas = "*"
+django-dbbackup = "*"
 
 [dev-packages]
 ipython = "*"
