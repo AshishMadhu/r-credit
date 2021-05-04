@@ -162,6 +162,7 @@
     axios.defaults.withCredentials = true;
     total = {{ customer.total }}
     total_paid = {{ customer.total_paid }}
+    const host = document.location.host;
     // var csrftoken = getCookie("csrftoken");
 
     var encoded_value_T = encodeURIComponent('True');
@@ -198,8 +199,6 @@
     }
 
     function deleteHandler(debitlog_pk) {
-
-        host = document.location.host;
         url = "http://" + host + "/" + "debitlog-delete" + "/" + debitlog_pk;
         del = confirm("Do you want to delet the log?");
         if (del) {
@@ -223,7 +222,7 @@
         if(completed) {
             completed = false;
             axios
-                .patch(`http://localhost:8000/api/debitlog/${debitlogId}/`, {
+                .patch(`http://${host}/api/debitlog/${debitlogId}/`, {
                     paid: `${val}`,
                 })
                 .then((res) => {
