@@ -162,7 +162,7 @@
         }
         if (valueChanged) {
             axios
-                .get(`https://${host}/api/search-customer/${debit_id}/?name=${this.value}`)
+                .get(`http://${host}/api/search-customer/${debit_id}/?name=${this.value}`)
                 .then((res) => {
                     var search_list = res.data;
                     var search_items_div = $('#search_items_container')

@@ -200,7 +200,7 @@
 
     function deleteHandler(debitlog_pk) {
 
-        url = "https://" + host + "/" + "debitlog-delete" + "/" + debitlog_pk;
+        url = "http://" + host + "/" + "debitlog-delete" + "/" + debitlog_pk;
         del = confirm("Do you want to delet the log?");
         if (del) {
             axios
@@ -223,11 +223,7 @@
         if(completed) {
             completed = false;
             axios
-<<<<<<< HEAD
                 .patch(`http://${host}/api/debitlog/${debitlogId}/`, {
-=======
-                .patch(`https://${host}/api/debitlog/${debitlogId}/`, {
->>>>>>> 5f19d4bdb59bea9979f81968e69116b4e6aa2d3a
                     paid: `${val}`,
                 })
                 .then((res) => {

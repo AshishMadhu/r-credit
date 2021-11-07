@@ -2,7 +2,7 @@
 {% load static %}
 {% load crispy_forms_tags %}
 {% block title %} {{ request.user.username }} - debits
-{% endblock title %} {% block content %}
+{% endblock title %} {% block content %} 
 <div class="row">
     <div class="col-md-7">
         <div class="list-group mt-4">
@@ -44,7 +44,7 @@
         <form action="{% url 'main:create-debit' %}" method="post">
             {% csrf_token %}
             {{ debit_form|crispy }}
-            <button type="submit" class="btn btn-block btn-secondary">Create debit</button>
+            <button type="submit" class="btn btn-block btn-primary">Create debit</button>
         </form>
     </div>
 </div>
@@ -55,7 +55,7 @@
     axios.defaults.xsrfCookieName = "csrftoken";
     axios.defaults.withCredentials = true;
     host = document.location.host;
-    url = "https://" + host + "/" + "debit-delete/";
+    url = "http://" + host + "/" + "debit-delete/";
 
     function deleteHandler(id) {
         url += id + "/";
